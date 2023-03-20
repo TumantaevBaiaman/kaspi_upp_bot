@@ -1,0 +1,2 @@
+API_TOKEN = 'bot token'
+AUTHORIZED_USER_ID = []
