@@ -21,6 +21,17 @@ async def gsheet2df(spreadsheet_name, sheet_num):
     return sheet
 
 
+async def add_data_sheets(spreadsheet_name, sheet_num, data):
+
+    sheet = client.open(spreadsheet_name).get_worksheet(sheet_num)
+    for i in data:
+        new_row = [None, None, str(i["Название товара "]), int(i["Штрихкод"])]
+        try:
+            sheet.append_row(new_row)
+        except:
+            pass
+
+
 async def update_price_by_sku(sheet, all_record, sku, new_price):
 
     for row_num, record in enumerate(all_record):
@@ -55,13 +66,24 @@ async def read_sheets():
 async def new_data_price(name_excel: list, price_excel: list) -> dict:
     new_data = {}
 
-    sku_name = {i["SKU"]: str(i["Название товара  в Umag"]) for i in name_excel}
-    price_name = {str(i["Название товара "]): i["Закупочная цена"] for i in price_excel}
+    sku_name = {i["SKU"]: str(i["Штрихкод"]) for i in name_excel if i["SKU"] != ""}
+    price_name = {str(i["Штрихкод"]): i["Закупочная цена"] for i in price_excel}
 
     for key, value in sku_name.items():
         if value in price_name:
             new_data[key] = [price_name[value], value]
     return new_data
+
+
+async def add_new_data(name_excel: list, price_excel: list) -> list:
+    new_data = []
+
+    data = [i["Штрихкод"] for i in name_excel]
+
+    for i in price_excel:
+        if i["Штрихкод"] not in data:
+            new_data.append(i)
+    await add_data_sheets("Названия Каспи-Umag", 0, new_data)
 
 
 async def update(data: dict):

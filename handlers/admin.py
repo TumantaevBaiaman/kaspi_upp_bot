@@ -2,7 +2,7 @@ import asyncio
 
 from aiogram import types, Dispatcher
 from create_bot import dp, bot
-from sheets_settings import read_sheets, new_data_price, update
+from sheets_settings import read_sheets, new_data_price, update, add_new_data
 from aiogram.dispatcher.filters import Text
 from key.buttons import menu_info
 
@@ -15,6 +15,7 @@ async def update_google_sheets(message: types.Message):
     await bot.send_message(message.from_user.id, 'Немного подождите')
     name_excel, price_excel = await read_sheets()
     new_price = await new_data_price(name_excel, price_excel)
+    await add_new_data(name_excel, price_excel)
     data = await update(new_price)
     if data:
         await bot.send_message(message.from_user.id, 'Новые данные')
