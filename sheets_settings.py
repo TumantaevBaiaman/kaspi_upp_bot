@@ -32,6 +32,16 @@ async def add_data_sheets(spreadsheet_name, sheet_num, data):
             pass
 
 
+async def add_data_main_sheets(spreadsheet_name, sheet_num, data):
+    sheet = client.open(spreadsheet_name).get_worksheet(sheet_num)
+    for i in data:
+        new_row = [str(i[0]), str(i[1]), None, float(i[3])]
+        try:
+            sheet.append_row(new_row)
+        except:
+            pass
+
+
 async def update_price_by_sku(sheet, all_record, sku, new_price):
 
     for row_num, record in enumerate(all_record):
@@ -75,6 +85,17 @@ async def new_data_price(name_excel: list, price_excel: list) -> dict:
     return new_data
 
 
+async def new_data_sku(name_excel: list, price_excel: list) -> dict:
+    new_data = {}
+    sku_name = {i["SKU"]: [str(i["Штрихкод"]), str(i["Название товара в Каспи"])] for i in name_excel if i["SKU"] != ""}
+    price_name = {str(i["Штрихкод"]): i["Закупочная цена"] for i in price_excel}
+
+    for key, value in sku_name.items():
+        if value[0] in price_name:
+            new_data[key] = [price_name[value[0]], *value]
+    return new_data
+
+
 async def add_new_data(name_excel: list, price_excel: list) -> list:
     new_data = []
 
@@ -97,11 +118,12 @@ async def update(data: dict):
             task = asyncio.create_task(update_data(sheet, all_records, key, float(value[0].replace(",", "."))))
             tasks.append(task)
         else:
-            data_excel_new_sku.append([key, *value])
+            data_excel_new_sku.append([key, str(value[2]), None, float(value[0].replace(",", "."))])
+    await add_data_main_sheets("ExcelFormatTemplate", 0, data_excel_new_sku)
     await asyncio.gather(*tasks)
 
-    if data_excel_new_sku == []:
-        return False
-    else:
-        get_report_file(data_excel_new_sku)
-        return True
+    # if data_excel_new_sku == []:
+    #     return False
+    # else:
+    #     get_report_file(data_excel_new_sku)
+    #     return True
