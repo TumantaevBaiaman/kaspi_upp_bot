@@ -49,8 +49,12 @@ async def update_price_by_sku(sheet, all_record, sku, new_price):
             try:
                 sheet.update_cell(row_num + 2, 4, new_price)
                 return
-            except:
-                return
+            except Exception as e:
+                try:
+                    sheet.cell(row=row_num + 2, col=4).value = float(new_price)
+                    return
+                except Exception as e:
+                    return
 
 
 async def load_data(sheet_name):
@@ -119,8 +123,8 @@ async def update(data: dict):
             tasks.append(task)
         else:
             data_excel_new_sku.append([key, str(value[2]), None, float(value[0].replace(",", "."))])
-    await add_data_main_sheets("ExcelFormatTemplate", 0, data_excel_new_sku)
     await asyncio.gather(*tasks)
+    await add_data_main_sheets("ExcelFormatTemplate", 0, data_excel_new_sku)
 
     # if data_excel_new_sku == []:
     #     return False
