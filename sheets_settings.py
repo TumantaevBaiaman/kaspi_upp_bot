@@ -35,7 +35,7 @@ async def add_data_sheets(spreadsheet_name, sheet_num, data):
 async def add_data_main_sheets(spreadsheet_name, sheet_num, data):
     sheet = client.open(spreadsheet_name).get_worksheet(sheet_num)
     for i in data:
-        new_row = [str(i[0]), str(i[1]), None, float(i[3])]
+        new_row = [str(i[0]), str(i[1]), None, i[3]]
         try:
             sheet.append_row(new_row)
         except:
@@ -51,7 +51,7 @@ async def update_price_by_sku(sheet, all_record, sku, new_price):
                 return
             except Exception as e:
                 try:
-                    sheet.cell(row=row_num + 2, col=4).value = float(new_price)
+                    sheet.cell(row=row_num + 2, col=4).value = new_price
                     return
                 except Exception as e:
                     return
@@ -119,10 +119,10 @@ async def update(data: dict):
     data_excel_new_sku = []
     for key, value in data.items():
         if key in sku_data_all:
-            task = asyncio.create_task(update_data(sheet, all_records, key, float(value[0].replace(",", "."))))
+            task = asyncio.create_task(update_data(sheet, all_records, key, value[0]))
             tasks.append(task)
         else:
-            data_excel_new_sku.append([key, str(value[2]), None, float(value[0].replace(",", "."))])
+            data_excel_new_sku.append([key, str(value[2]), None, value[0]])
     await asyncio.gather(*tasks)
     await add_data_main_sheets("ExcelFormatTemplate", 0, data_excel_new_sku)
 
